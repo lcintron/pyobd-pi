@@ -11,6 +11,9 @@ import os
 import wx
 import time
 from threading import Thread
+from wx._controls import wx
+
+import wx.animate
 
 from obd_capture import OBD_Capture
 from obd_sensors import SENSORS
@@ -21,6 +24,9 @@ from obd_sensors import *
 # OBD variables
 BACKGROUND_FILENAME = "bg_black.jpg"
 LOGO_FILENAME 		= "cowfish.png"
+LOADING_FILENAME    = "default.gif"
+SPLASHSCREEN_FILENAME ="bg_black.jpg"
+SPLASHSCREEN_TIMEOUT = 1000
 
 #-------------------------------------------------------------------------------
 
@@ -71,7 +77,7 @@ class OBDConnection(object):
 
 #-------------------------------------------------------------------------------
 
-class OBDText(wx.TextCtrl):
+class OBDText():
     """
     Text display while loading OBD application.
     """
@@ -80,17 +86,32 @@ class OBDText(wx.TextCtrl):
         """
         Constructor.
         """
-        style = wx.TE_READONLY | wx.TE_MULTILINE
-        wx.TextCtrl.__init__(self, parent, style=style)
+        #style = wx.TE_READONLY | wx.TE_MULTILINE | wx.TE_CENTRE#
+        #wx.TextCtrl.__init__(self, parent, style=style)
+        width, height = wx.GetDisplaySize()
+        pos1 = (width/2-100, height/2+100)
+        pos2 = (width/2-100, height/2+120)
+        font3 = wx.Font(16, wx.ROMAN, wx.NORMAL, wx.NORMAL, faceName="Monaco")
+        self.label1 = wx.StaticText(parent, -1, ' ',pos1)
+        self.label1.SetFont(font3)
+        self.label2 = wx.StaticText(parent, -1, ' ',pos2)
+        self.label2.SetFont(font3)
+        self.label1.SetWindowStyle(wx.TRANSPARENT_WINDOW)
+        self.label2.SetWindowStyle(wx.TRANSPARENT_WINDOW)
+        self.label1.SetBackgroundColour(wx.TransparentColour)
+        self.label2.SetBackgroundColour(wx.TransparentColour)
+        self.label1.SetForegroundColour(wx.WHITE)
+        self.label2.SetForegroundColour(wx.WHITE)
 
-        self.SetBackgroundColour('#21211f')
-        self.SetForegroundColour(wx.WHITE)  
 
-        font = wx.Font(12, wx.ROMAN, wx.NORMAL, wx.NORMAL, faceName="Monaco")
-        self.SetFont(font)
+        #self.textCtrl.SetPosition(self, wx.Point(self,width/2-100, height/2+150))
+        #font = wx.Font(12, wx.ROMAN, wx.NORMAL, wx.NORMAL, faceName="Monaco")
+        #self.SetFont(font)
 
-    def AddText(self, text):
-        self.AppendText(text)
+    def AddText1(self, text):
+        self.label1.SetLabelText(text)
+    def AddText2(self, text):
+        self.label2.SetLabelText(text)
 
 #-------------------------------------------------------------------------------
 
@@ -143,6 +164,7 @@ class OBDPanelGauges(wx.Panel):
                 (wx.ACCEL_NORMAL, wx.WXK_LEFT, lid), 
                 (wx.ACCEL_NORMAL, wx.WXK_RIGHT, rid), 
                 ])
+
         self.SetAcceleratorTable(self.accel_tbl)
 
         # Handle events for mouse clicks
@@ -313,11 +335,11 @@ class OBDLoadingPanel(wx.Panel):
         super(OBDLoadingPanel, self).__init__(*args, **kwargs)
 
         # Background image
-        image = wx.Image(BACKGROUND_FILENAME) 
-        width, height = wx.GetDisplaySize() 
-        image = image.Scale(width, height, wx.IMAGE_QUALITY_HIGH)
-        self.bitmap = wx.BitmapFromImage(image) 
-        self.Bind(wx.EVT_PAINT, self.OnPaint)
+        #image = wx.Image(BACKGROUND_FILENAME)
+        #width, height = wx.GetDisplaySize()
+        #image = image.Scale(width, height, wx.IMAGE_QUALITY_HIGH)
+        #self.bitmap = wx.BitmapFromImage(image)
+        #self.Bind(wx.EVT_PAINT, self.OnPaint)
 
         # Logo
         bitmap = wx.Bitmap(LOGO_FILENAME)
@@ -326,7 +348,15 @@ class OBDLoadingPanel(wx.Panel):
         image = image.Scale(width/6, height/6, wx.IMAGE_QUALITY_HIGH)
         bitmap = wx.BitmapFromImage(image)
         control = wx.StaticBitmap(self, wx.ID_ANY, bitmap)
-        control.SetPosition((10, 10)) 
+        control.SetPosition((10, 10))
+
+        #loader
+        width, height = wx.GetDisplaySize()
+        ag = wx.animate.GIFAnimationC1trl(self, wx.ID_ANY, LOADING_FILENAME, pos=(width/2-100, height/2-100))
+        # clears the background
+        ag.GetPlayer().UseBackgroundColour(False)
+        # continuously loop through the frames of the gif file (default)
+        ag.Play()
 
         # Create an accelerator table
         cid = wx.NewId()
@@ -335,7 +365,7 @@ class OBDLoadingPanel(wx.Panel):
                 (wx.ACCEL_CTRL, ord('C'), cid), 
                 ])
         self.SetAcceleratorTable(self.accel_tbl)
-
+        self.SetBackgroundColour(wx.BLACK)
         # Connection
         self.c = None
 
@@ -353,14 +383,15 @@ class OBDLoadingPanel(wx.Panel):
         Display the loading screen.
         """
         boxSizer = wx.BoxSizer(wx.VERTICAL)
-        self.textCtrl = OBDText(self)
-        boxSizer.Add(self.textCtrl, 1, wx.EXPAND | wx.ALL, 92)
-        self.SetSizer(boxSizer)
-        font3 = wx.Font(16, wx.ROMAN, wx.NORMAL, wx.NORMAL, faceName="Monaco")
-        self.textCtrl.SetFont(font3)
-        self.textCtrl.AddText(" Opening interface (serial port)\n")     
-        self.textCtrl.AddText(" Trying to connect...\n")
-        
+        #self.textCtrl = OBDText(self)
+        width, height = wx.GetDisplaySize()
+        #self.textCtrl.SetPosition(self, wx.Point(self,width/2-100, height/2+150))
+        #boxSizer.Add(self.textCtrl, 1, wx.EXPAND | wx.ALL, 200)
+        #self.SetSizer(boxSizer)
+        #font3 = wx.Font(16, wx.ROMAN, wx.NORMAL, wx.NORMAL, faceName="Monaco")
+        #self.textCtrl.SetFont(font3)
+        #self.textCtrl.AddText1(" Opening interface (serial port)\n")
+        #self.textCtrl.AddText2(" Trying to connect...\n")
         self.timer0 = wx.Timer(self)
         self.Bind(wx.EVT_TIMER, self.connect, self.timer0)
         self.timer0.Start(1000)
@@ -376,22 +407,21 @@ class OBDLoadingPanel(wx.Panel):
         connected = False
         while not connected:
             connected = self.c.is_connected()
-            self.textCtrl.Clear()
-            self.textCtrl.AddText(" Trying to connect ..." + time.asctime())
+            #self.textCtrl.AddText1(" Trying to connect ..." + time.asctime())
             if connected: 
                 break
 
         if not connected:
-            self.textCtrl.AddText(" Not connected\n")
+            #self.textCtrl.AddText1(" Not connected\n")
             return False
         else:
-            self.textCtrl.Clear()
+            #self.textCtrl.Clear()
             #self.textCtrl.AddText(" Connected\n")
             port_name = self.c.get_port_name()
-            if port_name:
-                self.textCtrl.AddText(" Failed Connection: " + port_name +"\n")
-                self.textCtrl.AddText(" Please hold alt & esc to view terminal.")
-            self.textCtrl.AddText(str(self.c.get_output()))
+            #if port_name:
+                #self.textCtrl.AddText1(" Failed Connection: " + port_name +"\n")
+                #self.textCtrl.AddText2(" Please hold alt & esc to view terminal.")
+            #self.textCtrl.AddText1(str(self.c.get_output()))
             self.sensors = self.c.get_sensors()
             self.port = self.c.get_port()
 
