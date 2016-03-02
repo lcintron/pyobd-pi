@@ -9,11 +9,9 @@
 
 import os
 import wx
+import wx.animate
 import time
 from threading import Thread
-from wx._controls import wx
-
-import wx.animate
 
 from obd_capture import OBD_Capture
 from obd_sensors import SENSORS
@@ -22,11 +20,11 @@ from obd_sensors import *
 #-------------------------------------------------------------------------------
 
 # OBD variables
-BACKGROUND_FILENAME = "bg_black.jpg"
-LOGO_FILENAME 		= "cowfish.png"
-LOADING_FILENAME    = "default.gif"
+BACKGROUND_FILENAME   = "bg_black.jpg"
+LOGO_FILENAME         = "cowfish.png"
+LOADING_FILENAME      = "default.gif"
 SPLASHSCREEN_FILENAME ="bg_black.jpg"
-SPLASHSCREEN_TIMEOUT = 1000
+SPLASHSCREEN_TIMEOUT  = 1000
 
 #-------------------------------------------------------------------------------
 
@@ -342,17 +340,17 @@ class OBDLoadingPanel(wx.Panel):
         #self.Bind(wx.EVT_PAINT, self.OnPaint)
 
         # Logo
-        bitmap = wx.Bitmap(LOGO_FILENAME)
-        width, height = bitmap.GetSize()
-        image = wx.ImageFromBitmap(bitmap)
-        image = image.Scale(width/6, height/6, wx.IMAGE_QUALITY_HIGH)
-        bitmap = wx.BitmapFromImage(image)
-        control = wx.StaticBitmap(self, wx.ID_ANY, bitmap)
-        control.SetPosition((10, 10))
+        #bitmap = wx.Bitmap(LOGO_FILENAME)
+        #width, height = bitmap.GetSize()
+        #image = wx.ImageFromBitmap(bitmap)
+        #image = image.Scale(width/6, height/6, wx.IMAGE_QUALITY_HIGH)
+        #bitmap = wx.BitmapFromImage(image)
+        #control = wx.StaticBitmap(self, wx.ID_ANY, bitmap)
+        #control.SetPosition((10, 10))
 
         #loader
         width, height = wx.GetDisplaySize()
-        ag = wx.animate.GIFAnimationC1trl(self, wx.ID_ANY, LOADING_FILENAME, pos=(width/2-100, height/2-100))
+        ag = wx.animate.GIFAnimationCtrl(self, wx.ID_ANY, LOADING_FILENAME, pos=(width/2-100, height/2-100))
         # clears the background
         ag.GetPlayer().UseBackgroundColour(False)
         # continuously loop through the frames of the gif file (default)
